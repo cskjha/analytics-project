@@ -33,14 +33,35 @@ public class CollectDataFromGoogleNews {
 			}
 			String fetchedData = builder.toString();
 			String startToken = "\"content\":\"";
-			int index = fetchedData.indexOf(startToken,0);;
-			while (index > -1) {
-				int endIndex = fetchedData.indexOf("\"",index+(startToken.length()));
-				String newsContent = fetchedData.substring(index+(startToken.length()), endIndex);
-				pw.write(newsContent+"\n\n");
-				index = fetchedData.indexOf(startToken,endIndex);
+			String startTokenForActualContent = "\"unescapedUrl\":\"";
+			int index = fetchedData.indexOf(startToken,0);
+			int startindexActualContent = fetchedData.indexOf(startTokenForActualContent,0);
+			while (startindexActualContent > -1) {
+				int endIndex = fetchedData.indexOf("\"",startindexActualContent+(startTokenForActualContent.length()));
+				String actualContentUrl = fetchedData.substring(startindexActualContent+(startTokenForActualContent.length()), endIndex);
+				//fetch content from URL
+				System.out.println(actualContentUrl+"\n\n");
+				URL url = new URL(actualContentUrl);
+				URLConnection connection = url.openConnection();
+				connection.addRequestProperty("Referer", "localhost");
+				
+				String line;
+				try {
+					BufferedReader reader = new BufferedReader(new InputStreamReader(connection.getInputStream()));
+					while((line = reader.readLine()) != null) {
+						pw.append(line);
+					}
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				
+				
+				//pw.write(newsContent+"\n\n");
+				startindexActualContent = fetchedData.indexOf(startTokenForActualContent,endIndex);
 			}
-			
+			//pw.write(builder.toString());
 			pw.close();
 			
 			
